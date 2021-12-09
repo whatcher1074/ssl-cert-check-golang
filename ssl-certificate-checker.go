@@ -13,6 +13,8 @@ import (
 	"syscall"
      "io"
 	"gopkg.in/gomail.v2"
+	"crypto/tls"
+	"time"
 )
 
 const PROGRAMVERSION = 4.15
@@ -40,7 +42,15 @@ type DataValues struct {
 	Smtp_Port     int
 	User_Auth     string
 	User_Password string
-}
+	ServerURL  string
+	ServerPort int
+	TlsFlag string
+	TLSServerName bool
+	Options string
+	CertFile string 
+	Host  string 
+	Port int 
+ }
 
 var CertData = DataValues{}
 CertData.CertTmp =  ""
@@ -152,4 +162,71 @@ func cleanup() {
 	}
 
 
+}
+
+/*
+##########################################
+# Purpose: Describe how the script works
+# Arguments:
+#   None
+##########################################
+*/ 
+func usage() { 
+
+	fmt.Println("Usage: $0 [ -e email address ] [-E sender email address] [ -x days ] [-q] [-a] [-b] [-h] [-i] [-n] [-N] [-v]    { [ -s common_name ] && [ -p port] } || { [ -f cert_file ] } || { [ -c cert file ] } || { [ -d cert dir ] }")
+    fmt.Println("")
+    fmt.Println("  -a                : Send a warning message through E-mail")
+    fmt.Println("  -b                : Will not print header")
+    fmt.Println("  -c cert file      : Print the expiration date for the PEM or PKCS12 formatted certificate in cert file")
+    fmt.Println("  -d cert directory : Print the expiration date for the PEM or PKCS12 formatted certificates in cert directory")
+    fmt.Println("  -e E-mail address : E-mail address to send expiration notices")
+    fmt.Println( "  -E E-mail sender  : E-mail address of the sender")
+    fmt.Println("  -f cert file      : File with a list of FQDNs and ports")
+    fmt.Println("  -h                : Print this screen")
+    fmt.Println("  -i                : Print the issuer of the certificate")
+    fmt.Println("  -k password       : PKCS12 file password")
+    fmt.Println("  -n                : Run as a Nagios plugin")
+    fmt.Println("  -N                : Run as a Nagios plugin and output one line summary (implies -n, requires -f or -d)")
+    fmt.Println("  -p port           : Port to connect to (interactive mode)")
+    fmt.Println("  -q                : Don't print anything on the console")
+    fmt.Println("  -s commmon name   : Server to connect to (interactive mode)")
+    fmt.Println("  -S                : Print validation information")
+    fmt.Println("  -t type           : Specify the certificate type")
+    fmt.Println("  -V                : Print version information")
+    fmt.Println("  -x days           : Certificate expiration interval (eg. if cert_date < days)")
+    fmt.Println("")
+
+
+}
+
+/*
+##########################################################################
+# Purpose: Connect to a server ($1) and port ($2) to see if a certificate
+#          has expired
+# Arguments:
+#   $1 -> Server name
+#   $2 -> TCP port to connect to
+##########################################################################
+*/
+func check_server_status() {
+   CertData.ServerPort  
+   CertData.ServerURL 
+ 
+   //check the URL is setup with the proper certificate remote url connection call and then the expiration date. 
+   //come back and do the date expired diff correctly then email to group
+
+   conn, err := tls.Dial("tcp", CerData.ServerURL:CertDataServerPort, nil)
+	if err != nil {
+		panic("Server doesn't support SSL certificate err: " + err.Error())
+	}
+
+	err = conn.VerifyHostname(CerData.ServerURL)
+	if err != nil {
+		panic("Hostname doesn't match with certificate: " + err.Error())
+	}
+
+	expiry := conn.ConnectionState().PeerCertificates[0].NotAfter
+	fmt.Printf("Issuer: %s\nExpiry: %v\n", conn.ConnectionState().PeerCertificates[0].Issuer, expiry.Format(time.RFC850))
+    
+   
 }
